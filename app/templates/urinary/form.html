@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Editar' if record else 'Novo' }} Registo — Urológico{% endblock %}
+{% block page_title %}{{ 'Editar registo' if record else 'Novo registo urológico' }}{% endblock %}
+
+{% block topbar_actions %}
+<a href="/urologia" class="btn btn--ghost btn--sm">← Voltar</a>
+{% endblock %}
+
+{% block content %}
+<div class="form-page form-page--single">
+  <div class="card form-card">
+
+    {% if errors %}
+    <div class="alert alert--danger">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <div>{% for e in errors %}<p>{{ e }}</p>{% endfor %}</div>
+    </div>
+    {% endif %}
+
+    <form method="post" action="{{ '/urologia/' + record.id|string + '/editar' if record else '/urologia/novo' }}" class="form" novalidate>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="recorded_at">Data e hora <span class="required">*</span></label>
+          <input type="datetime-local" id="recorded_at" name="recorded_at" class="form-control"
+                 value="{{ now }}" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="quantity">Quantidade</label>
+          <div class="btn-group-select">
+            {% for val, label in quantities %}
+            <label class="btn-select">
+              <input type="radio" name="quantity" value="{{ val }}"
+                     {% if record and record.quantity == val %}checked{% endif %}>
+              <span>{{ label }}</span>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="color">Cor / Aspeto</label>
+          <select id="color" name="color" class="form-control">
+            <option value="">Selecionar...</option>
+            {% for val, label in colors %}
+            <option value="{{ val }}" {% if record and record.color == val %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="odor_intensity">Intensidade do odor</label>
+          <select id="odor_intensity" name="odor_intensity" class="form-control">
+            <option value="">Selecionar...</option>
+            {% for val, label in odors %}
+            <option value="{{ val }}" {% if record and record.odor_intensity == val %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Sintomas associados</label>
+        <div class="checkbox-grid">
+          {% for val, label in symptoms_options %}
+          {% set is_checked = (selected_symptoms is defined and val in selected_symptoms) or (record and record.symptoms and val in record.symptoms.split(',')) %}
+          <label class="checkbox-item">
+            <input type="checkbox" name="symptoms" value="{{ val }}" {% if is_checked %}checked{% endif %}>
+            <span class="checkbox-item__label">{{ label }}</span>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="observations">Observações</label>
+        <textarea id="observations" name="observations" class="form-control" rows="3"
+                  placeholder="Notas adicionais...">{{ record.observations if record and record.observations else '' }}</textarea>
+      </div>
+
+      <div class="form-actions">
+        <a href="/urologia" class="btn btn--ghost">Cancelar</a>
+        <button type="submit" class="btn btn--primary">
+          {{ 'Guardar alterações' if record else 'Guardar registo' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

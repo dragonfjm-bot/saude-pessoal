@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Gráficos — Urológico{% endblock %}
+{% block page_title %}Frequência Urológica{% endblock %}
+
+{% block topbar_actions %}
+<a href="/urologia" class="btn btn--ghost btn--sm">← Voltar</a>
+{% endblock %}
+
+{% block content %}
+
+<div class="period-tabs">
+  {% for p, label in [('week','7 dias'),('month','30 dias'),('3months','3 meses')] %}
+  <a href="?period={{ p }}" class="period-tab {% if period == p %}period-tab--active{% endif %}">{{ label }}</a>
+  {% endfor %}
+</div>
+
+{% if chart_data.labels %}
+<div class="charts-grid">
+  <div class="card chart-card chart-card--full">
+    <div class="chart-card__header">
+      <h3 class="chart-card__title">Frequência diária (registos)</h3>
+    </div>
+    <div class="chart-container">
+      <canvas id="uriChart"></canvas>
+    </div>
+  </div>
+</div>
+{% else %}
+<div class="empty-state">
+  <h3>Sem dados para o período selecionado</h3>
+  <a href="/urologia/novo" class="btn btn--primary">Criar registo</a>
+</div>
+{% endif %}
+
+<div class="export-row">
+  <span class="export-row__label">Exportar dados</span>
+  <a href="/urologia/exportar/csv" class="btn btn--ghost btn--sm">CSV</a>
+  <a href="/urologia/exportar/json" class="btn btn--ghost btn--sm">JSON</a>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+const data = {{ chart_data | tojson }};
+if (data.labels && data.labels.length) {
+  const ctx = document.getElementById('uriChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: data.labels,
+      datasets: [{
+        label: 'Registos',
+        data: data.counts,
+        backgroundColor: 'rgba(8,145,178,0.75)',
+        borderColor: '#0891B2',
+        borderWidth: 1,
+        borderRadius: 6,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { stepSize: 1 },
+          grid: { color: 'rgba(128,128,128,0.1)' }
+        },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+}
+</script>
+{% endblock %}

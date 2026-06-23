@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Exportar Dados{% endblock %}
+{% block page_title %}Exportar Dados{% endblock %}
+
+{% block content %}
+<div class="export-page">
+
+  <div class="card export-section">
+    <div class="export-section__icon export-section__icon--bp">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+    </div>
+    <div class="export-section__body">
+      <h3 class="export-section__title">Tensão Arterial</h3>
+      <p class="export-section__desc">Todas as medições de tensão arterial, frequência cardíaca e contexto.</p>
+    </div>
+    <div class="export-section__actions">
+      <a href="/tensao-arterial/exportar/csv" class="btn btn--ghost">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        CSV
+      </a>
+      <a href="/tensao-arterial/exportar/json" class="btn btn--ghost">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        JSON
+      </a>
+    </div>
+  </div>
+
+  <div class="card export-section">
+    <div class="export-section__icon export-section__icon--uri">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+    </div>
+    <div class="export-section__body">
+      <h3 class="export-section__title">Urológico</h3>
+      <p class="export-section__desc">Registos de micção, quantidade, cor, odor e sintomas.</p>
+    </div>
+    <div class="export-section__actions">
+      <a href="/urologia/exportar/csv" class="btn btn--ghost">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        CSV
+      </a>
+      <a href="/urologia/exportar/json" class="btn btn--ghost">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        JSON
+      </a>
+    </div>
+  </div>
+
+  <div class="card export-section">
+    <div class="export-section__icon export-section__icon--wt">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+    </div>
+    <div class="export-section__body">
+      <h3 class="export-section__title">Peso</h3>
+      <p class="export-section__desc">Histórico de registos de peso corporal.</p>
+    </div>
+    <div class="export-section__actions">
+      <a href="/peso/exportar/csv" class="btn btn--ghost">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        CSV
+      </a>
+      <a href="/peso/exportar/json" class="btn btn--ghost">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        JSON
+      </a>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

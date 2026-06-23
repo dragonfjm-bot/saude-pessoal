@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard — Saúde Pessoal{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block topbar_actions %}
+<span class="topbar__date">{{ now().strftime('%d/%m/%Y') if now is defined else '' }}</span>
+{% endblock %}
+
+{% block content %}
+
+<!-- ── CARDS PRINCIPAIS ──────────────────────────────────────────────── -->
+<div class="stats-grid">
+
+  <!-- Tensão Arterial -->
+  <div class="stat-card {% if latest_bp %}stat-card--{{ classify_bp(latest_bp.systolic, latest_bp.diastolic).css | replace('badge-','') }}{% endif %}">
+    <div class="stat-card__header">
+      <div class="stat-card__icon stat-card__icon--bp">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      </div>
+      <span class="stat-card__label">Última Tensão Arterial</span>
+    </div>
+    {% if latest_bp %}
+    <div class="stat-card__value">
+      {{ latest_bp.systolic }}<span class="stat-card__unit">/</span>{{ latest_bp.diastolic }}
+      <span class="stat-card__subunit">mmHg</span>
+    </div>
+    {% set cls = classify_bp(latest_bp.systolic, latest_bp.diastolic) %}
+    <div class="stat-card__meta">
+      <span class="badge {{ cls.css }}">{{ cls.label }}</span>
+      <span class="stat-card__date">{{ latest_bp.measured_at.strftime('%d/%m/%Y %H:%M') }}</span>
+    </div>
+    {% if latest_bp.heart_rate %}
+    <div class="stat-card__extra">FC: {{ latest_bp.heart_rate }} bpm</div>
+    {% endif %}
+    {% else %}
+    <div class="stat-card__empty">Sem registos</div>
+    {% endif %}
+    <a href="/tensao-arterial/novo" class="stat-card__action">+ Novo registo</a>
+  </div>
+
+  <!-- Peso -->
+  <div class="stat-card">
+    <div class="stat-card__header">
+      <div class="stat-card__icon stat-card__icon--weight">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+      </div>
+      <span class="stat-card__label">Último Peso</span>
+    </div>
+    {% if latest_wt %}
+    <div class="stat-card__value">
+      {{ "%.1f"|format(latest_wt.weight_kg) }}<span class="stat-card__subunit">kg</span>
+    </div>
+    <div class="stat-card__meta">
+      {% if wt_trend and wt_trend.diff > 0 %}
+        {% if wt_trend.direction == 'up' %}
+        <span class="trend trend--up">↑ +{{ "%.2f"|format(wt_trend.diff) }} kg</span>
+        {% elif wt_trend.direction == 'down' %}
+        <span class="trend trend--down">↓ −{{ "%.2f"|format(wt_trend.diff) }} kg</span>
+        {% endif %}
+      {% endif %}
+      <span class="stat-card__date">{{ latest_wt.measured_at.strftime('%d/%m/%Y') }}</span>
+    </div>
+    {% else %}
+    <div class="stat-card__empty">Sem registos</div>
+    {% endif %}
+    <a href="/peso/novo" class="stat-card__action">+ Novo registo</a>
+  </div>
+
+  <!-- Urologia Hoje -->
+  <div class="stat-card">
+    <div class="stat-card__header">
+      <div class="stat-card__icon stat-card__icon--urinary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+      </div>
+      <span class="stat-card__label">Hoje — Urológico</span>
+    </div>
+    <div class="stat-card__value">
+      {{ today_uri_count }}<span class="stat-card__subunit">registos</span>
+    </div>
+    <div class="stat-card__meta">
+      <span class="stat-card__date">{{ now().strftime('%d/%m/%Y') if now is defined else '' }}</span>
+    </div>
+    <a href="/urologia/novo" class="stat-card__action">+ Novo registo</a>
+  </div>
+
+  <!-- Média Semanal BP -->
+  <div class="stat-card">
+    <div class="stat-card__header">
+      <div class="stat-card__icon stat-card__icon--stats">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      </div>
+      <span class="stat-card__label">Média Semanal BP</span>
+    </div>
+    {% if bp_week_stats %}
+    <div class="stat-card__value">
+      {{ bp_week_stats.avg_systolic }}<span class="stat-card__unit">/</span>{{ bp_week_stats.avg_diastolic }}
+      <span class="stat-card__subunit">mmHg</span>
+    </div>
+    <div class="stat-card__meta">
+      <span>{{ bp_week_stats.count }} medições nos últimos 7 dias</span>
+    </div>
+    {% if bp_week_stats.avg_heart_rate %}
+    <div class="stat-card__extra">FC média: {{ bp_week_stats.avg_heart_rate }} bpm</div>
+    {% endif %}
+    {% else %}
+    <div class="stat-card__empty">Sem dados na última semana</div>
+    {% endif %}
+    <a href="/tensao-arterial/graficos" class="stat-card__action">Ver gráficos</a>
+  </div>
+
+</div>
+
+<!-- ── TABELA RECENTE ────────────────────────────────────────────────── -->
+{% if recent_bp %}
+<section class="section">
+  <div class="section__header">
+    <h2 class="section__title">Últimas medições de tensão arterial</h2>
+    <a href="/tensao-arterial" class="btn btn--ghost btn--sm">Ver todas</a>
+  </div>
+  <div class="table-wrapper">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Data / Hora</th>
+          <th>Sistólica</th>
+          <th>Diastólica</th>
+          <th>FC</th>
+          <th>Contexto</th>
+          <th>Classificação</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in recent_bp %}
+        {% set cls = classify_bp(r.systolic, r.diastolic) %}
+        <tr>
+          <td class="table__date">{{ r.measured_at.strftime('%d/%m/%Y %H:%M') }}</td>
+          <td class="table__num">{{ r.systolic }}</td>
+          <td class="table__num">{{ r.diastolic }}</td>
+          <td class="table__num">{{ r.heart_rate or '—' }}</td>
+          <td>{{ r.context or '—' }}</td>
+          <td><span class="badge {{ cls.css }}">{{ cls.label }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% else %}
+<section class="section">
+  <div class="empty-state">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+    <h3>Sem registos ainda</h3>
+    <p>Comece por registar a sua tensão arterial, peso ou dados urológicos.</p>
+    <div class="empty-state__actions">
+      <a href="/tensao-arterial/novo" class="btn btn--primary">Registar tensão arterial</a>
+      <a href="/peso/novo" class="btn btn--secondary">Registar peso</a>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // inject today's date into topbar
+  document.querySelectorAll('.topbar__date').forEach(el => {
+    el.textContent = new Date().toLocaleDateString('pt-PT', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  });
+</script>
+{% endblock %}

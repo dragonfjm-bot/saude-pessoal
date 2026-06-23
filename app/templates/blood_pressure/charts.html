@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+{% block title %}Gráficos — Tensão Arterial{% endblock %}
+{% block page_title %}Evolução da Tensão Arterial{% endblock %}
+
+{% block topbar_actions %}
+<a href="/tensao-arterial" class="btn btn--ghost btn--sm">← Voltar</a>
+{% endblock %}
+
+{% block content %}
+
+<!-- Period selector -->
+<div class="period-tabs">
+  {% for p, label in [('week','7 dias'),('month','30 dias'),('3months','3 meses'),('year','1 ano')] %}
+  <a href="?period={{ p }}"
+     class="period-tab {% if period == p %}period-tab--active{% endif %}">{{ label }}</a>
+  {% endfor %}
+</div>
+
+{% if chart_data.labels %}
+<div class="charts-grid">
+
+  <!-- Tensão Arterial -->
+  <div class="card chart-card chart-card--full">
+    <div class="chart-card__header">
+      <h3 class="chart-card__title">Tensão Arterial (mmHg)</h3>
+      <div class="chart-legend">
+        <span class="legend-item legend-item--systolic">Sistólica</span>
+        <span class="legend-item legend-item--diastolic">Diastólica</span>
+      </div>
+    </div>
+    <div class="chart-container">
+      <canvas id="bpChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Frequência Cardíaca -->
+  <div class="card chart-card chart-card--half">
+    <div class="chart-card__header">
+      <h3 class="chart-card__title">Frequência Cardíaca (bpm)</h3>
+    </div>
+    <div class="chart-container chart-container--sm">
+      <canvas id="hrChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Estatísticas -->
+  <div class="card chart-card chart-card--half chart-card--stats">
+    <h3 class="chart-card__title">Estatísticas do período</h3>
+    {% set sys_vals = chart_data.systolic | select | list %}
+    {% set dia_vals = chart_data.diastolic | select | list %}
+    {% if sys_vals %}
+    <dl class="stat-list">
+      <div class="stat-list__item">
+        <dt>Sistólica máx.</dt>
+        <dd>{{ sys_vals | max }} mmHg</dd>
+      </div>
+      <div class="stat-list__item">
+        <dt>Sistólica mín.</dt>
+        <dd>{{ sys_vals | min }} mmHg</dd>
+      </div>
+      <div class="stat-list__item">
+        <dt>Diastólica máx.</dt>
+        <dd>{{ dia_vals | max }} mmHg</dd>
+      </div>
+      <div class="stat-list__item">
+        <dt>Diastólica mín.</dt>
+        <dd>{{ dia_vals | min }} mmHg</dd>
+      </div>
+      <div class="stat-list__item">
+        <dt>Nº de medições</dt>
+        <dd>{{ chart_data.labels | length }}</dd>
+      </div>
+    </dl>
+    {% endif %}
+  </div>
+
+</div>
+{% else %}
+<div class="empty-state">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+  <h3>Sem dados para o período selecionado</h3>
+  <a href="/tensao-arterial/novo" class="btn btn--primary">Registar medição</a>
+</div>
+{% endif %}
+
+<!-- Export -->
+<div class="export-row">
+  <span class="export-row__label">Exportar dados</span>
+  <a href="/tensao-arterial/exportar/csv" class="btn btn--ghost btn--sm">CSV</a>
+  <a href="/tensao-arterial/exportar/json" class="btn btn--ghost btn--sm">JSON</a>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+const chartData = {{ chart_data | tojson }};
+
+if (chartData.labels && chartData.labels.length) {
+  // Blood Pressure Chart
+  const bpCtx = document.getElementById('bpChart').getContext('2d');
+  new Chart(bpCtx, {
+    type: 'line',
+    data: {
+      labels: chartData.labels,
+      datasets: [
+        {
+          label: 'Sistólica',
+          data: chartData.systolic,
+          borderColor: '#DC2626',
+          backgroundColor: 'rgba(220,38,38,0.08)',
+          tension: 0.4,
+          fill: false,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+        },
+        {
+          label: 'Diastólica',
+          data: chartData.diastolic,
+          borderColor: '#1B5EA6',
+          backgroundColor: 'rgba(27,94,166,0.08)',
+          tension: 0.4,
+          fill: false,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        annotation: {}
+      },
+      scales: {
+        y: {
+          grid: { color: 'rgba(128,128,128,0.1)' },
+          suggestedMin: 50,
+          suggestedMax: 180,
+          ticks: { callback: v => v + ' mmHg' }
+        },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // Heart Rate Chart
+  const hrCtx = document.getElementById('hrChart').getContext('2d');
+  const hrData = chartData.heart_rate.filter(v => v !== null);
+  if (hrData.length) {
+    new Chart(hrCtx, {
+      type: 'line',
+      data: {
+        labels: chartData.labels,
+        datasets: [{
+          label: 'FC (bpm)',
+          data: chartData.heart_rate,
+          borderColor: '#0891B2',
+          backgroundColor: 'rgba(8,145,178,0.1)',
+          tension: 0.4,
+          fill: true,
+          spanGaps: true,
+          pointRadius: 3,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: {
+            grid: { color: 'rgba(128,128,128,0.1)' },
+            suggestedMin: 40,
+            suggestedMax: 120,
+          },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+  }
+}
+</script>
+{% endblock %}

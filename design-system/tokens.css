@@ -1,0 +1,24 @@
+:root {
+  --font-heading: GothamRoundedMedium;
+  --font-body: GothamRoundedMedium;
+  --space-1: 2px;
+  --space-2: 4px;
+  --space-3: 5px;
+  --space-4: 6px;
+  --space-5: 8px;
+  --space-6: 10px;
+  --space-7: 12px;
+  --space-8: 15px;
+  --space-9: 18px;
+  --space-10: 20px;
+  --space-11: 22px;
+  --space-12: 25px;
+  --space-13: 27px;
+  --space-14: 40px;
+  --space-15: 50px;
+  --space-16: 70px;
+  --space-17: 100px;
+  --space-18: 110px;
+  --space-19: 134.391px;
+  --space-20: 140px;
+}

@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Peso{% endblock %}
+{% block page_title %}Registos de Peso{% endblock %}
+
+{% block topbar_actions %}
+<a href="/peso/novo" class="btn btn--primary btn--sm">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+  Novo registo
+</a>
+<a href="/peso/graficos" class="btn btn--secondary btn--sm">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+  Gráficos
+</a>
+{% endblock %}
+
+{% block content %}
+
+<form method="get" class="filter-bar">
+  <div class="filter-bar__group">
+    <label class="form-label">De</label>
+    <input type="date" name="date_from" class="form-control form-control--sm" value="{{ date_from or '' }}">
+  </div>
+  <div class="filter-bar__group">
+    <label class="form-label">Até</label>
+    <input type="date" name="date_to" class="form-control form-control--sm" value="{{ date_to or '' }}">
+  </div>
+  <div class="filter-bar__actions">
+    <button type="submit" class="btn btn--primary btn--sm">Filtrar</button>
+    {% if date_from or date_to %}
+    <a href="/peso" class="btn btn--ghost btn--sm">Limpar</a>
+    {% endif %}
+  </div>
+  <div class="filter-bar__info">{{ total }} registo{{ 's' if total != 1 }}</div>
+</form>
+
+{% if records %}
+<div class="table-wrapper">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Data / Hora</th>
+        <th class="text-center">Peso (kg)</th>
+        <th class="text-center">Variação</th>
+        <th>Observações</th>
+        <th class="text-right">Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in records %}
+      {% set ns = namespace(diff=none) %}
+      {% if not loop.last %}
+        {% set ns.diff = (r.weight_kg - records[loop.index].weight_kg) | round(2) %}
+      {% endif %}
+      <tr>
+        <td class="table__date">{{ r.measured_at.strftime('%d/%m/%Y %H:%M') }}</td>
+        <td class="table__num table__num--large">{{ "%.1f"|format(r.weight_kg) }}</td>
+        <td class="table__num">
+          {% if ns.diff is not none %}
+            {% if ns.diff > 0 %}
+            <span class="trend trend--up">↑ +{{ "%.2f"|format(ns.diff) }}</span>
+            {% elif ns.diff < 0 %}
+            <span class="trend trend--down">↓ {{ "%.2f"|format(ns.diff) }}</span>
+            {% else %}
+            <span class="trend trend--neutral">—</span>
+            {% endif %}
+          {% else %}—{% endif %}
+        </td>
+        <td class="table__muted table__obs-inline">{{ r.observations or '—' }}</td>
+        <td class="table__actions">
+          <a href="/peso/{{ r.id }}/editar" class="icon-btn icon-btn--sm" title="Editar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </a>
+          {% set del_label = 'o registo de ' ~ r.measured_at.strftime('%d/%m/%Y') %}
+          <button
+            class="icon-btn icon-btn--sm icon-btn--danger"
+            title="Eliminar"
+            @click="deleteModal = { open: true, url: '/peso/{{ r.id }}/eliminar', label: '{{ del_label }}' }"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+          </button>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if total_pages > 1 %}
+<div class="pagination">
+  {% if page > 1 %}<a href="?page={{ page-1 }}" class="pagination__btn">‹ Anterior</a>{% endif %}
+  <span class="pagination__info">Página {{ page }} de {{ total_pages }}</span>
+  {% if page < total_pages %}<a href="?page={{ page+1 }}" class="pagination__btn">Seguinte ›</a>{% endif %}
+</div>
+{% endif %}
+
+{% else %}
+<div class="empty-state">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+  <h3>Sem registos{% if date_from or date_to %} para o período selecionado{% endif %}</h3>
+  <a href="/peso/novo" class="btn btn--primary">Registar peso</a>
+</div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Editar' if record else 'Nova' }} Medição — Tensão Arterial{% endblock %}
+{% block page_title %}{{ 'Editar medição' if record else 'Nova medição de tensão arterial' }}{% endblock %}
+
+{% block topbar_actions %}
+<a href="/tensao-arterial" class="btn btn--ghost btn--sm">← Voltar</a>
+{% endblock %}
+
+{% block content %}
+<div class="form-page">
+  <div class="card form-card">
+
+    {% if errors %}
+    <div class="alert alert--danger">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <div>
+        {% for e in errors %}<p>{{ e }}</p>{% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <form method="post" action="{{ '/tensao-arterial/' + record.id|string + '/editar' if record else '/tensao-arterial/novo' }}" class="form" novalidate>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="measured_at">Data e hora <span class="required">*</span></label>
+          <input type="datetime-local" id="measured_at" name="measured_at" class="form-control"
+                 value="{{ now }}" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="context">Contexto</label>
+          <select id="context" name="context" class="form-control">
+            <option value="">Selecionar...</option>
+            {% for val, label in contexts %}
+            <option value="{{ val }}" {% if record and record.context == val %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="bp-inputs">
+        <div class="form-group">
+          <label class="form-label" for="systolic">
+            Sistólica <span class="required">*</span>
+            <span class="form-hint">mmHg</span>
+          </label>
+          <input type="number" id="systolic" name="systolic" class="form-control form-control--large"
+                 min="60" max="300" placeholder="120"
+                 value="{{ record.systolic if record else '' }}" required>
+          <div class="bp-ref">
+            <span class="ref-normal">Normal &lt;120</span>
+            <span class="ref-high">Alto ≥140</span>
+          </div>
+        </div>
+
+        <div class="bp-separator">
+          <span>/</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="diastolic">
+            Diastólica <span class="required">*</span>
+            <span class="form-hint">mmHg</span>
+          </label>
+          <input type="number" id="diastolic" name="diastolic" class="form-control form-control--large"
+                 min="40" max="200" placeholder="80"
+                 value="{{ record.diastolic if record else '' }}" required>
+          <div class="bp-ref">
+            <span class="ref-normal">Normal &lt;80</span>
+            <span class="ref-high">Alto ≥90</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="heart_rate">
+            Frequência cardíaca
+            <span class="form-hint">bpm</span>
+          </label>
+          <input type="number" id="heart_rate" name="heart_rate" class="form-control form-control--large"
+                 min="30" max="250" placeholder="72"
+                 value="{{ record.heart_rate if record and record.heart_rate else '' }}">
+        </div>
+      </div>
+
+      <!-- Preview da classificação em tempo real -->
+      <div class="bp-preview" id="bp-preview" style="display:none">
+        <span class="bp-preview__label">Classificação:</span>
+        <span class="badge" id="bp-preview-badge"></span>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="observations">Observações</label>
+        <textarea id="observations" name="observations" class="form-control" rows="3"
+                  placeholder="Notas adicionais sobre esta medição...">{{ record.observations if record and record.observations else '' }}</textarea>
+      </div>
+
+      <div class="form-actions">
+        <a href="/tensao-arterial" class="btn btn--ghost">Cancelar</a>
+        <button type="submit" class="btn btn--primary">
+          {{ 'Guardar alterações' if record else 'Registar medição' }}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Guia de referência -->
+  <div class="card reference-card">
+    <h3 class="reference-card__title">Referência — OMS</h3>
+    <table class="ref-table">
+      <thead><tr><th>Classificação</th><th>Sistólica</th><th>Diastólica</th></tr></thead>
+      <tbody>
+        <tr><td><span class="badge badge-success">Normal</span></td><td>&lt; 120</td><td>&lt; 80</td></tr>
+        <tr><td><span class="badge badge-elevated">Elevada</span></td><td>120–129</td><td>&lt; 80</td></tr>
+        <tr><td><span class="badge badge-warning">Hipert. Grau 1</span></td><td>130–139</td><td>80–89</td></tr>
+        <tr><td><span class="badge badge-danger">Hipert. Grau 2</span></td><td>≥ 140</td><td>≥ 90</td></tr>
+        <tr><td><span class="badge badge-crisis">Crise</span></td><td>&gt; 180</td><td>&gt; 120</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const sysInput = document.getElementById('systolic');
+  const diaInput = document.getElementById('diastolic');
+  const preview = document.getElementById('bp-preview');
+  const badge = document.getElementById('bp-preview-badge');
+
+  const thresholds = [
+    { test: (s,d) => s > 180 || d > 120, css: 'badge-crisis',   label: 'Crise Hipertensiva' },
+    { test: (s,d) => s >= 140 || d >= 90, css: 'badge-danger',   label: 'Hipertensão Grau 2' },
+    { test: (s,d) => s >= 130 || d >= 80, css: 'badge-warning',  label: 'Hipertensão Grau 1' },
+    { test: (s,d) => s >= 120,            css: 'badge-elevated',  label: 'Elevada' },
+    { test: () => true,                    css: 'badge-success',   label: 'Normal' },
+  ];
+
+  function updatePreview() {
+    const s = parseInt(sysInput.value), d = parseInt(diaInput.value);
+    if (!s || !d) { preview.style.display = 'none'; return; }
+    const match = thresholds.find(t => t.test(s, d));
+    badge.className = 'badge ' + match.css;
+    badge.textContent = match.label;
+    preview.style.display = 'flex';
+  }
+
+  sysInput.addEventListener('input', updatePreview);
+  diaInput.addEventListener('input', updatePreview);
+  updatePreview();
+</script>
+{% endblock %}
