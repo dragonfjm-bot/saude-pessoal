@@ -6,9 +6,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Saude Pessoal** — a personal health application for personal health tracking.
 
-**Stack:** FastAPI + SQLAlchemy (SQLite) + Jinja2 templates, Python 3.12
+**Stack:** FastAPI + SQLAlchemy + Jinja2 templates, Python 3.12
 
-**To run:** `start.bat` (or `python run.py`) → opens browser at http://127.0.0.1:8080
+**Environments:**
+- Local: SQLite (`data/saude.db`), arranca com `start.bat` → http://127.0.0.1:8080
+- Produção: Render + Supabase (PostgreSQL) → https://saude-pessoal.onrender.com
+
+**DATABASE_URL:** lida de variável de ambiente; SQLite como fallback local.
+Em produção usa o connection pooler do Supabase (porta 5432, host `aws-1-eu-west-2.pooler.supabase.com`).
+A ligação directa ao Supabase (host `db.*.supabase.co`) falha no Render por IPv6 — usar sempre o pooler.
+
+**Deploy:** git push para `dragonfjm-bot/saude-pessoal` (GitHub) → Render faz auto-deploy.
+Render requer `PYTHON_VERSION=3.12.0` como env var (Python 3.14 default não tem wheels para pydantic-core).
+
+**To run locally:** `start.bat` (or `python run.py`) → opens browser at http://127.0.0.1:8080
 
 **Domains:**
 - `app/domains/blood_pressure/` — tensão arterial (`/tensao-arterial`)
