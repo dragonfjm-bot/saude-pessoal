@@ -28,6 +28,7 @@ def uri_list(
 ):
     records, total = svc.list(page=page, per_page=ITEMS_PER_PAGE, date_from=date_from, date_to=date_to)
     total_pages = max(1, -(-total // ITEMS_PER_PAGE))
+    water_deltas = {r.id: svc.get_water_delta(r) for r in records}
     return templates.TemplateResponse(
         "urinary/list.html",
         {
@@ -39,6 +40,7 @@ def uri_list(
             "total_pages": total_pages,
             "date_from": date_from,
             "date_to": date_to,
+            "water_deltas": water_deltas,
             "msg": request.query_params.get("msg"),
         },
     )

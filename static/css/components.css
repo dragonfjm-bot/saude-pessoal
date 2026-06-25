@@ -397,6 +397,7 @@ select.form-control { cursor: pointer; }
 .pill--pouca  { background: #DBEAFE; color: #1D4ED8; }
 .pill--normal { background: var(--color-success-light); color: var(--color-success); }
 .pill--muita  { background: var(--color-warning-light); color: #92400E; }
+.water-delta  { font-size: var(--text-xs); font-weight: 600; color: #0891B2; }
 
 /* ── Modal ───────────────────────────────────────────────────────────── */
 .modal-overlay {

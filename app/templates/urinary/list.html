@@ -63,7 +63,15 @@
           {% else %}—{% endif %}
         </td>
         <td class="table__muted">{{ r.odor_intensity | replace('_', ' ') | capitalize if r.odor_intensity else '—' }}</td>
-        <td class="table__muted">{{ r.water_ml | string ~ ' ml' if r.water_ml else '—' }}</td>
+        <td class="table__muted">
+          {% set delta = water_deltas.get(r.id) %}
+          {% if delta is not none %}
+            <span class="water-delta">+{{ delta }} ml</span>
+            {% if r.water_ml != delta %}
+            <br><small class="table__muted">total: {{ r.water_ml }} ml</small>
+            {% endif %}
+          {% else %}—{% endif %}
+        </td>
         <td>
           {% if r.symptoms %}
           <div class="symptoms-list">

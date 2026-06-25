@@ -65,6 +65,23 @@ class UrinaryService:
 
     # ── Aggregates ────────────────────────────────────────────────────────
 
+    def get_water_delta(self, record: UrinaryRecord) -> int | None:
+        """Water consumed since previous record of the same day (ml)."""
+        if record.water_ml is None:
+            return None
+        day_start = datetime.combine(record.recorded_at.date(), datetime.min.time())
+        prev = self.db.scalar(
+            select(UrinaryRecord)
+            .where(UrinaryRecord.recorded_at >= day_start)
+            .where(UrinaryRecord.recorded_at < record.recorded_at)
+            .where(UrinaryRecord.water_ml.isnot(None))
+            .order_by(UrinaryRecord.recorded_at.desc())
+            .limit(1)
+        )
+        if prev is None:
+            return record.water_ml
+        return max(0, record.water_ml - prev.water_ml)
+
     def get_today_count(self) -> int:
         today = date.today()
         start = datetime.combine(today, datetime.min.time())
