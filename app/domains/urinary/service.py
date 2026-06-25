@@ -100,12 +100,12 @@ class UrinaryService:
         records, _ = self.list(per_page=100_000)
         output = io.StringIO()
         writer = csv.writer(output)
-        writer.writerow(["ID", "Data/Hora", "Quantidade", "Cor", "Odor", "Sintomas", "Observações"])
+        writer.writerow(["ID", "Data/Hora", "Quantidade", "Cor", "Odor", "Sintomas", "Água (ml)", "Observações"])
         for r in records:
             writer.writerow([
                 r.id, r.recorded_at.strftime("%Y-%m-%d %H:%M"),
                 r.quantity or "", r.color or "", r.odor_intensity or "",
-                r.symptoms or "", r.observations or "",
+                r.symptoms or "", r.water_ml if r.water_ml is not None else "", r.observations or "",
             ])
         return output.getvalue()
 
@@ -119,6 +119,7 @@ class UrinaryService:
                 "color": r.color,
                 "odor_intensity": r.odor_intensity,
                 "symptoms": r.symptoms,
+                "water_ml": r.water_ml,
                 "observations": r.observations,
             }
             for r in records

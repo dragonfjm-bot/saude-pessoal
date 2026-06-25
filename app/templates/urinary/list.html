@@ -42,6 +42,7 @@
         <th>Quantidade</th>
         <th>Cor</th>
         <th>Odor</th>
+        <th>Água</th>
         <th>Sintomas</th>
         <th class="text-right">Ações</th>
       </tr>
@@ -62,6 +63,7 @@
           {% else %}—{% endif %}
         </td>
         <td class="table__muted">{{ r.odor_intensity | replace('_', ' ') | capitalize if r.odor_intensity else '—' }}</td>
+        <td class="table__muted">{{ r.water_ml | string ~ ' ml' if r.water_ml else '—' }}</td>
         <td>
           {% if r.symptoms %}
           <div class="symptoms-list">
@@ -87,7 +89,7 @@
       </tr>
       {% if r.observations %}
       <tr class="table__obs-row">
-        <td colspan="6" class="table__obs">
+        <td colspan="7" class="table__obs">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
           {{ r.observations }}
         </td>

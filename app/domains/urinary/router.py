@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.config import ITEMS_PER_PAGE, TEMPLATES_DIR
 from app.database import get_session
-from app.domains.urinary.schemas import COLORS, ODORS, QUANTITIES, SYMPTOMS, UrinaryForm
+from app.domains.urinary.schemas import COLORS, ODORS, QUANTITIES, SYMPTOMS, WATER_AMOUNTS, UrinaryForm
 from app.domains.urinary.service import UrinaryService
 
 router = APIRouter(prefix="/urologia", tags=["urinary"])
@@ -56,6 +56,7 @@ def uri_new(request: Request):
             "colors": COLORS,
             "odors": ODORS,
             "symptoms_options": SYMPTOMS,
+            "water_amounts": WATER_AMOUNTS,
             "now": datetime.now().strftime("%Y-%m-%dT%H:%M"),
             "errors": [],
         },
@@ -70,6 +71,7 @@ def uri_create(
     color: str = Form(""),
     odor_intensity: str = Form(""),
     symptoms: list[str] = Form(default=[]),
+    water_ml: str = Form(""),
     observations: str = Form(""),
     svc: UrinaryService = Depends(_svc),
 ):
@@ -80,6 +82,7 @@ def uri_create(
             color=color or None,
             odor_intensity=odor_intensity or None,
             symptoms=",".join(symptoms) if symptoms else None,
+            water_ml=water_ml or None,
             observations=observations or None,
         )
         svc.create(form)
@@ -95,6 +98,7 @@ def uri_create(
                 "colors": COLORS,
                 "odors": ODORS,
                 "symptoms_options": SYMPTOMS,
+                "water_amounts": WATER_AMOUNTS,
                 "now": recorded_at,
                 "errors": [str(exc)],
             },
@@ -117,6 +121,7 @@ def uri_edit(record_id: int, request: Request, svc: UrinaryService = Depends(_sv
             "colors": COLORS,
             "odors": ODORS,
             "symptoms_options": SYMPTOMS,
+            "water_amounts": WATER_AMOUNTS,
             "now": record.recorded_at.strftime("%Y-%m-%dT%H:%M"),
             "selected_symptoms": record.symptoms.split(",") if record.symptoms else [],
             "errors": [],
@@ -133,6 +138,7 @@ def uri_update(
     color: str = Form(""),
     odor_intensity: str = Form(""),
     symptoms: list[str] = Form(default=[]),
+    water_ml: str = Form(""),
     observations: str = Form(""),
     svc: UrinaryService = Depends(_svc),
 ):
@@ -143,6 +149,7 @@ def uri_update(
             color=color or None,
             odor_intensity=odor_intensity or None,
             symptoms=",".join(symptoms) if symptoms else None,
+            water_ml=water_ml or None,
             observations=observations or None,
         )
         svc.update(record_id, form)
@@ -159,6 +166,7 @@ def uri_update(
                 "colors": COLORS,
                 "odors": ODORS,
                 "symptoms_options": SYMPTOMS,
+                "water_amounts": WATER_AMOUNTS,
                 "now": recorded_at,
                 "selected_symptoms": symptoms,
                 "errors": [str(exc)],

@@ -74,6 +74,16 @@
       </div>
 
       <div class="form-group">
+        <label class="form-label" for="water_ml">Água ingerida desde o registo anterior</label>
+        <select id="water_ml" name="water_ml" class="form-control">
+          <option value="">Não registado</option>
+          {% for val, label in water_amounts %}
+          <option value="{{ val }}" {% if record and record.water_ml == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
         <label class="form-label" for="observations">Observações</label>
         <textarea id="observations" name="observations" class="form-control" rows="3"
                   placeholder="Notas adicionais...">{{ record.observations if record and record.observations else '' }}</textarea>
