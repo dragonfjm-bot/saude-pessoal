@@ -36,6 +36,20 @@ Templates live in `app/templates/<domain>/` (list, form, charts).
 - All pages are mobile-responsive
 - Urinary form uses only select/radio inputs (no free-text number fields)
 - Export page exists at `/exportar`
+- Urinary records track `water_ml`: total water ingested since midnight (cumulative).
+  The list auto-computes the delta between consecutive same-day records via
+  `UrinaryService.get_water_delta()`. Always register the running day total, not
+  the amount since the last void.
+
+**Schema migrations (no Alembic):**
+New columns are added via `_migrate()` in `app/database.py`, called at startup
+after `create_all()`. Each ALTER TABLE is wrapped in try/except (column-already-exists
+is silently ignored). Add new statements to the list in `_migrate()` when adding
+columns to existing tables.
+
+**Restarting uvicorn on Windows:**
+`pkill` via Bash does not reliably kill the process. Use PowerShell:
+`Get-NetTCPConnection -LocalPort 8080 | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }`
 
 **Known gotcha — Jinja2 in Alpine.js attributes:**
 Escaped quotes (`\'`) inside `{{ }}` expressions are invalid in Jinja2.
